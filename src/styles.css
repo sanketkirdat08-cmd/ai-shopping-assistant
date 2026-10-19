@@ -1603,4 +1603,131 @@ img { display: block; }
   .toast { bottom: 12px; right: 12px; left: 12px; }
   .lang-toggle { padding: 5px 7px; }
   .lang-label { display: none; }
+  .page-content { padding-bottom: 80px !important; }
 }
+
+/* ── Modern PWA Install Pill in Topbar ── */
+.install-app-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.35), rgba(6, 182, 212, 0.35));
+  border: 1px solid rgba(99, 102, 241, 0.55);
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.install-app-pill:hover {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.5), rgba(6, 182, 212, 0.5));
+  transform: translateY(-1px);
+}
+
+/* ── Text-to-Speech (TTS) Voice Button ── */
+.tts-speak-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #a5b4fc;
+  border-radius: 6px;
+  padding: 4px 7px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.tts-speak-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  color: #ffffff;
+}
+.tts-speak-btn.speaking {
+  background: rgba(6, 182, 212, 0.3);
+  border-color: #06b6d4;
+  color: #51e4e8;
+  animation: pulse-speaking 1s infinite alternate;
+}
+@keyframes pulse-speaking {
+  from { box-shadow: 0 0 4px rgba(6, 182, 212, 0.3); }
+  to { box-shadow: 0 0 14px rgba(6, 182, 212, 0.7); }
+}
+
+/* ── WhatsApp Button ── */
+.whatsapp-btn:hover {
+  background: #1ebc57 !important;
+  transform: translateY(-1px);
+}
+
+/* ── Desktop: Mobile Bottom Navigation Bar is hidden ── */
+.mobile-bottom-bar {
+  display: none;
+}
+
+/* ── Mobile: Show Bottom Navigation Bar ── */
+@media (max-width: 700px) {
+  .mobile-bottom-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: rgba(15, 23, 42, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--line);
+    z-index: 900;
+    padding: 0 6px;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .mob-nav-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 6px 10px;
+    position: relative;
+    transition: all 0.18s ease;
+  }
+  .mob-nav-btn.active {
+    color: var(--cyan);
+  }
+  .mob-ai-bubble {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    display: grid;
+    place-items: center;
+    color: #ffffff;
+    margin-top: -10px;
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.45);
+  }
+  .mob-badge {
+    position: absolute;
+    top: 2px;
+    right: 8px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 999px;
+    line-height: 1.2;
+  }
+}
+

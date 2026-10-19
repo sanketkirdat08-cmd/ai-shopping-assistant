@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Package, ChevronRight, ShoppingBag, FileText, Printer, X, Sparkles, CheckCircle2 } from "lucide-react";
+import { Package, ChevronRight, ShoppingBag, FileText, Printer, X, Sparkles, CheckCircle2, Truck, Clock, MapPin, Box } from "lucide-react";
 
 const money = (v) => `₹${Number(v).toLocaleString("en-IN")}`;
 
@@ -14,6 +14,7 @@ const statusColors = {
 export function OrdersPage({ orders, t, onShop }) {
   const [expanded, setExpanded] = useState(null);
   const [invoiceOrder, setInvoiceOrder] = useState(null);
+  const [trackingOrder, setTrackingOrder] = useState(null);
 
   if (orders.length === 0) {
     return (
@@ -63,7 +64,17 @@ export function OrdersPage({ orders, t, onShop }) {
                   <div><strong>Payment:</strong> {order.paymentMethod === "cod" ? "Cash on Delivery" : order.paymentMethod}</div>
                   <div><strong>Address:</strong> {order.address.address}, {order.address.city}, {order.address.state} - {order.address.pincode}</div>
                 </div>
-                <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end", gap: 10 }}>
+                <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end", gap: 10, flexWrap: "wrap" }}>
+                  <button
+                    className="secondary-button"
+                    style={{ padding: "6px 14px", fontSize: 11, display: "inline-flex", alignItems: "center", gap: 6, color: "var(--cyan)", borderColor: "rgba(6,182,212,0.4)" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTrackingOrder(order);
+                    }}
+                  >
+                    <Truck size={14} /> {t.trackPackage || "Track Package"}
+                  </button>
                   <button
                     className="secondary-button"
                     style={{ padding: "6px 14px", fontSize: 11, display: "inline-flex", alignItems: "center", gap: 6 }}
@@ -171,6 +182,82 @@ export function OrdersPage({ orders, t, onShop }) {
                     <Printer size={15} /> {t.printInvoice || "Print Invoice"}
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Live Shipment Tracker Modal ── */}
+      {trackingOrder && (
+        <div className="modal-backdrop" onClick={() => setTrackingOrder(null)}>
+          <div className="invoice-modal tracking-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 540 }}>
+            <div className="invoice-header">
+              <div className="invoice-brand">
+                <div className="brand-mark" style={{ background: "linear-gradient(135deg, #06b6d4, #4f46e5)" }}><Truck size={17} /></div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 16 }}>Live Shipment Tracker</h3>
+                  <small style={{ color: "var(--cyan)" }}>BlueDart Express • AWB: NX-{trackingOrder.id.slice(0, 8).toUpperCase()}-IN</small>
+                </div>
+              </div>
+              <button className="close-button" onClick={() => setTrackingOrder(null)} aria-label="Close tracking">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="tracking-body" style={{ padding: "20px 24px" }}>
+              <div className="tracking-meta-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 12, background: "rgba(255,255,255,0.03)", padding: 14, borderRadius: 10, border: "1px solid var(--line)", marginBottom: 20 }}>
+                <div>
+                  <small style={{ color: "#8b92aa", display: "block", fontSize: 11 }}>Status</small>
+                  <strong style={{ color: statusColors[trackingOrder.status] || "#72e0a7" }}>● {trackingOrder.status}</strong>
+                </div>
+                <div>
+                  <small style={{ color: "#8b92aa", display: "block", fontSize: 11 }}>Estimated Delivery</small>
+                  <strong style={{ color: "var(--text)" }}>In 2-3 Business Days</strong>
+                </div>
+                <div>
+                  <small style={{ color: "#8b92aa", display: "block", fontSize: 11 }}>Destination</small>
+                  <strong style={{ color: "var(--text)" }}>{trackingOrder.address.city || "Satara"}, {trackingOrder.address.state || "MH"}</strong>
+                </div>
+              </div>
+
+              {/* Step Progress Tracker */}
+              <div className="tracking-timeline" style={{ padding: "8px 0" }}>
+                {[
+                  { step: "Order Confirmed", desc: "Order verified & inventory allocated", done: true, icon: CheckCircle2, time: "Day 1, 10:30 AM" },
+                  { step: "Quality Packed", desc: "Inspection passed at Nexa Fulfillment Hub", done: true, icon: Box, time: "Day 1, 04:15 PM" },
+                  { step: "In Transit", desc: "Dispatched via Express Surface courier", done: trackingOrder.status !== "Confirmed", icon: Truck, time: "Day 2, 08:00 AM", current: trackingOrder.status === "Shipped" || trackingOrder.status === "Processing" },
+                  { step: "Out for Delivery", desc: "Courier partner reaching your doorstep", done: trackingOrder.status === "Delivered", icon: MapPin, time: "Pending", current: trackingOrder.status === "Delivered" }
+                ].map((st, idx, arr) => (
+                  <div key={idx} className={`timeline-item ${st.done ? "done" : ""} ${st.current ? "current" : ""}`} style={{ display: "flex", gap: 14, position: "relative", paddingBottom: idx < arr.length - 1 ? 22 : 0 }}>
+                    <div className="timeline-icon-wrap" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: "50%",
+                        background: st.done ? "#72e0a7" : st.current ? "#51e4e8" : "rgba(255,255,255,0.08)",
+                        color: st.done || st.current ? "#0f172a" : "#64748b",
+                        display: "grid", placeItems: "center", fontWeight: 700, zIndex: 2
+                      }}>
+                        <st.icon size={16} />
+                      </div>
+                      {idx < arr.length - 1 && (
+                        <div style={{ width: 2, flex: 1, background: st.done ? "#72e0a7" : "rgba(255,255,255,0.1)", margin: "4px 0", minHeight: 22 }} />
+                      )}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                        <strong style={{ fontSize: 13, color: st.done || st.current ? "var(--text)" : "#64748b" }}>{st.step}</strong>
+                        <small style={{ color: "#8b92aa", fontSize: 11 }}>{st.time}</small>
+                      </div>
+                      <p style={{ margin: "2px 0 0", fontSize: 12, color: "#8b92aa" }}>{st.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop: 22, textAlign: "center" }}>
+                <button className="primary-button" style={{ width: "100%", justifyContent: "center" }} onClick={() => setTrackingOrder(null)}>
+                  Close Tracker
+                </button>
               </div>
             </div>
           </div>

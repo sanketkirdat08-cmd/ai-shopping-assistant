@@ -6,7 +6,7 @@ import {
   Package, Search, Send, Settings, ShoppingBag, Sparkles,
   Star, UserRound, X, Zap, Shield, ArrowUpDown,
   LogIn, Globe, Trash2, Mic, MicOff, Share2,
-  ExternalLink, Sun, Moon
+  ExternalLink, Sun, Moon, Volume2, VolumeX, Download, MessageCircle, Truck
 } from "lucide-react";
 import "./styles.css";
 
@@ -338,7 +338,73 @@ function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [activeImgIdx, setActiveImgIdx] = useState(0);
   const [toast, setToast] = useState(null);
+  const [speakingIdx, setSpeakingIdx] = useState(null);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
   const chatEndRef = useRef(null);
+
+  // Listen for PWA beforeinstallprompt event
+  useEffect(() => {
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    const handleAppInstalled = () => {
+      setIsAppInstalled(true);
+      setInstallPrompt(null);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setIsAppInstalled(true);
+    }
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!installPrompt) {
+      showToast(lang === "mr" ? "Chrome मेन्यू (⋮) वरून 'Install app' निवडा" : "Use Chrome menu (⋮) -> 'Install app'");
+      return;
+    }
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === "accepted") {
+      setInstallPrompt(null);
+    }
+  };
+
+  const speakText = (text, idx) => {
+    if (!("speechSynthesis" in window)) {
+      showToast("Speech audio not supported on this browser");
+      return;
+    }
+    if (speakingIdx === idx) {
+      window.speechSynthesis.cancel();
+      setSpeakingIdx(null);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const clean = text.replace(/\*\*/g, "").replace(/₹/g, "Rupees ").replace(/[#_*~`]/g, "");
+    const utterance = new SpeechSynthesisUtterance(clean);
+    utterance.lang = lang === "mr" ? "mr-IN" : lang === "hi" ? "hi-IN" : "en-IN";
+    utterance.rate = 1.0;
+    utterance.onend = () => setSpeakingIdx(null);
+    utterance.onerror = () => setSpeakingIdx(null);
+    setSpeakingIdx(idx);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const shareOnWhatsApp = (product) => {
+    const text = `🛍️ *${product.name}*\n💰 Price: ${money(product.price)} (Rating: ${product.rating}★)\n🛒 Discover on Nexa AI Shopping Assistant:\n${window.location.origin}`;
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
+  };
 
   // Reset active image index when product changes
   useEffect(() => {
@@ -771,6 +837,19 @@ function App() {
               )}
             </div>
 
+            {/* PWA 1-Tap Install Button */}
+            {!isAppInstalled && (
+              <button
+                type="button"
+                className="install-app-pill"
+                onClick={handleInstallClick}
+                title="Install Nexa App on your phone"
+              >
+                <Download size={13} />
+                <span>{lang === "mr" ? "ॲप इन्स्टॉल" : "Install App"}</span>
+              </button>
+            )}
+
             <button className="icon-button" aria-label="Notifications">
               <Bell size={19} /><span className="notification-dot" aria-hidden="true" />
             </button>
@@ -1195,7 +1274,20 @@ function App() {
                 <div key={i} className={`chat-message ${msg.from}`}>
                   {msg.from === "ai" && <div className="mini-bot" aria-hidden="true"><Bot size={14} /></div>}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p>{formatAiText(msg.text)}</p>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                      <p style={{ margin: 0, flex: 1 }}>{formatAiText(msg.text)}</p>
+                      {msg.from === "ai" && (
+                        <button
+                          type="button"
+                          className={`tts-speak-btn ${speakingIdx === i ? "speaking" : ""}`}
+                          onClick={() => speakText(msg.text, i)}
+                          title={speakingIdx === i ? "Stop audio" : "Listen to audio response"}
+                          aria-label="Listen response"
+                        >
+                          {speakingIdx === i ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                        </button>
+                      )}
+                    </div>
                     {msg.from === "ai" && msg.recommendedProducts && msg.recommendedProducts.length > 0 && (
                       <div className="chat-products-row">
                         {msg.recommendedProducts.map((p) => (
@@ -1410,7 +1502,15 @@ function App() {
                     }
                   }}
                 >
-                  <Share2 size={15} /> Share Product
+                  <Share2 size={15} /> Copy Details
+                </button>
+                <button
+                  type="button"
+                  className="whatsapp-btn wide-button"
+                  style={{ marginTop: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, background: "#25D366", color: "#ffffff", border: "none", fontWeight: 600, padding: "9px 16px", borderRadius: 8, cursor: "pointer" }}
+                  onClick={() => shareOnWhatsApp(selectedProduct)}
+                >
+                  <MessageCircle size={16} /> {lang === "mr" ? "WhatsApp वर शेअर करा" : "Share on WhatsApp"}
                 </button>
               </div>
             </div>
@@ -1418,6 +1518,55 @@ function App() {
         </div>
         );
       })()}
+
+      {/* ── Modern Mobile Bottom Navigation Bar (Flipkart / Amazon App style) ── */}
+      <nav className="mobile-bottom-bar" aria-label="Mobile Bottom Navigation">
+        <button
+          type="button"
+          className={`mob-nav-btn ${activePage === "Dashboard" ? "active" : ""}`}
+          onClick={() => setActivePage("Dashboard")}
+        >
+          <LayoutDashboard size={20} />
+          <span>Home</span>
+        </button>
+        <button
+          type="button"
+          className={`mob-nav-btn ${activePage === "Chat" ? "active" : ""}`}
+          onClick={() => setActivePage("Chat")}
+        >
+          <div className="mob-ai-bubble">
+            <Sparkles size={18} />
+          </div>
+          <span style={{ color: "var(--cyan)", fontWeight: 700 }}>Ask Nexa</span>
+        </button>
+        <button
+          type="button"
+          className={`mob-nav-btn ${activePage === "Compare" ? "active" : ""}`}
+          onClick={() => setActivePage("Compare")}
+        >
+          <BarChart3 size={20} />
+          <span>Compare</span>
+          {compare.length > 0 && <span className="mob-badge">{compare.length}</span>}
+        </button>
+        <button
+          type="button"
+          className={`mob-nav-btn ${activePage === "Wishlist" ? "active" : ""}`}
+          onClick={() => setActivePage("Wishlist")}
+        >
+          <Heart size={20} />
+          <span>Saved</span>
+          {wishlist.length > 0 && <span className="mob-badge">{wishlist.length}</span>}
+        </button>
+        <button
+          type="button"
+          className={`mob-nav-btn ${activePage === "Cart" ? "active" : ""}`}
+          onClick={() => setActivePage("Cart")}
+        >
+          <ShoppingBag size={20} />
+          <span>Cart</span>
+          {cart.length > 0 && <span className="mob-badge">{cart.length}</span>}
+        </button>
+      </nav>
     </div>
   );
 }
