@@ -28,3 +28,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Documents and Temp
+*.docx
+*.pdf
+pdf1_extracted/
+pdf2_extracted/
+pdf_preview_check/
+pdf_preview_check_v2/
+
