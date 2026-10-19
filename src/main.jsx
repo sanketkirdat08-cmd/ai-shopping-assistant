@@ -310,6 +310,38 @@ function App() {
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const langDropdownRef = useRef(null);
 
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notificationsRef = useRef(null);
+  const [notificationsList, setNotificationsList] = useState(() => [
+    {
+      id: 1,
+      title: "🎉 " + (lang === "mr" ? "आजची खास ऑफर!" : lang === "hi" ? "आज का विशेष ऑफर!" : lang === "gu" ? "આજની વિશેષ ઑફર!" : "Flash Sale: 15% OFF!"),
+      desc: lang === "mr" ? "Apple, Samsung व Dell उत्पादनांवर 15% अतिरिक्त सूट." : lang === "hi" ? "Apple, Samsung व Dell उत्पादों पर 15% अतिरिक्त छूट।" : lang === "gu" ? "Apple, Samsung અને Dell ઉત્પાદનો પર 15% વધારાની છૂટ." : "Extra 15% off on Apple, Samsung & Dell devices today.",
+      time: "10m ago",
+      read: false,
+      icon: "🔥",
+      page: "Dashboard"
+    },
+    {
+      id: 2,
+      title: "📦 " + (lang === "mr" ? "ऑर्डर इन ट्रॅन्झिट" : lang === "hi" ? "ऑर्डर रास्ते में है" : lang === "gu" ? "ઓર્ડર ટ્રાન્ઝિટમાં છે" : "Order Dispatched"),
+      desc: lang === "mr" ? "ऑर्डर #ORD-8492 BlueDart एक्सप्रेस द्वारे पाठवली आहे." : lang === "hi" ? "ऑर्डर #ORD-8492 BlueDart एक्सप्रेस से रवाना हो गया है।" : lang === "gu" ? "ઓર્ડર #ORD-8492 BlueDart એક્સપ્રેસ દ્વારા રવાના થઈ ગયો છે." : "Order #ORD-8492 dispatched via BlueDart Express.",
+      time: "1h ago",
+      read: false,
+      icon: "🚚",
+      page: "Orders"
+    },
+    {
+      id: 3,
+      title: "✨ " + (lang === "mr" ? "Nexa AI शिफारस" : lang === "hi" ? "Nexa AI सिफारिश" : lang === "gu" ? "Nexa AI ભલામણ" : "Nexa AI Recommendation"),
+      desc: lang === "mr" ? "तुमच्या आवडीनुसार ₹50,000 मधील 5G फोन्सची यादी तयार आहे." : lang === "hi" ? "₹50,000 के अंदर 5G स्मार्टफोन्स की नई सूची उपलब्ध है।" : lang === "gu" ? "₹50,000 માં 5G સ્માર્ટફોનની નવી યાદી ઉપલબ્ધ છે." : "5G camera smartphones under ₹50,000 curated for you.",
+      time: "3h ago",
+      read: false,
+      icon: "🤖",
+      page: "AI Assistant"
+    },
+  ]);
+
   const [user, setUser] = useState(auth.getUser);
   const [authPage, setAuthPage] = useState(null); // null | "login" | "signup"
 
@@ -421,11 +453,14 @@ function App() {
   // Persist language
   useEffect(() => { settings.setLang(lang); }, [lang]);
 
-  // Close language dropdown on outside click
+  // Close language and notification dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (langDropdownRef.current && !langDropdownRef.current.contains(e.target)) {
         setLangDropdownOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target)) {
+        setNotificationsOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -683,7 +718,6 @@ function App() {
 
   const navigation = [
     { label: t.nav.dashboard, key: "Dashboard", icon: LayoutDashboard },
-    { label: t.nav.discover, key: "Discover", icon: Search },
     { label: t.nav.aiAssistant, key: "AI Assistant", icon: MessageSquare },
     { label: t.nav.compare, key: "Compare", icon: BarChart3, count: compare.length || null },
     { label: t.nav.wishlist, key: "Wishlist", icon: Heart, count: wishlist.length || null },
@@ -850,9 +884,79 @@ function App() {
               </button>
             )}
 
-            <button className="icon-button" aria-label="Notifications">
-              <Bell size={19} /><span className="notification-dot" aria-hidden="true" />
-            </button>
+            {/* Interactive Notification Center */}
+            <div className="notification-wrap" ref={notificationsRef}>
+              <button
+                className="icon-button"
+                onClick={() => setNotificationsOpen((prev) => !prev)}
+                aria-label="Notifications"
+                title={t.notificationsTitle || "Notifications"}
+              >
+                <Bell size={19} />
+                {notificationsList.filter((n) => !n.read).length > 0 && (
+                  <span className="notification-dot" aria-hidden="true" />
+                )}
+              </button>
+
+              {notificationsOpen && (
+                <div className="notification-dropdown">
+                  <div className="notification-header">
+                    <h4>
+                      <Bell size={15} />
+                      <span>{t.notificationsTitle || "Notifications"}</span>
+                      {notificationsList.filter((n) => !n.read).length > 0 && (
+                        <span className="notification-badge">
+                          {notificationsList.filter((n) => !n.read).length}
+                        </span>
+                      )}
+                    </h4>
+                    {notificationsList.some((n) => !n.read) && (
+                      <button
+                        type="button"
+                        className="notification-mark-all"
+                        onClick={() => {
+                          setNotificationsList((prev) => prev.map((n) => ({ ...n, read: true })));
+                          showToast(t.markAllRead || "All marked as read");
+                        }}
+                      >
+                        {t.markAllRead || "Mark all read"}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="notification-list">
+                    {notificationsList.length === 0 ? (
+                      <div className="notification-empty">
+                        {t.noNotifications || "No notifications"}
+                      </div>
+                    ) : (
+                      notificationsList.map((item) => (
+                        <div
+                          key={item.id}
+                          className={`notification-item ${!item.read ? "unread" : ""}`}
+                          onClick={() => {
+                            setNotificationsList((prev) =>
+                              prev.map((n) => (n.id === item.id ? { ...n, read: true } : n))
+                            );
+                            if (item.page) setActivePage(item.page);
+                            setNotificationsOpen(false);
+                          }}
+                        >
+                          <div className="notification-item-icon">{item.icon}</div>
+                          <div className="notification-item-content">
+                            <div className="notification-item-title">
+                              <span>{item.title}</span>
+                              <span className="notification-item-time">{item.time}</span>
+                            </div>
+                            <p className="notification-item-desc">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
             {user ? (
               <div className="avatar" title={user.name} aria-label={user.name}>
                 {user.name?.[0]?.toUpperCase() || "U"}
@@ -873,7 +977,7 @@ function App() {
 
           {/* ── Orders Page ── */}
           {activePage === "Orders" && (
-            <OrdersPage orders={orders} t={t} onShop={() => setActivePage("Discover")} />
+            <OrdersPage orders={orders} t={t} onShop={() => setActivePage("Dashboard")} />
           )}
 
           {/* ── Admin Dashboard ── */}
@@ -894,8 +998,8 @@ function App() {
             />
           )}
 
-          {/* ── Main Shopping Pages (Dashboard, Discover, Wishlist, Cart) ── */}
-          {["Dashboard", "Discover", "Wishlist", "Cart"].includes(activePage) && (
+          {/* ── Main Shopping Pages (Dashboard, Wishlist, Cart) ── */}
+          {["Dashboard", "Wishlist", "Cart"].includes(activePage) && (
             <>
               {/* Hero */}
               <section className="hero-section">
@@ -995,7 +1099,7 @@ function App() {
                   <p className="section-kicker">{t.explore}</p>
                   <h2>{t.shopByCategory}</h2>
                 </div>
-                <button className="text-button" onClick={() => { setSelectedCategory("All"); setSelectedBrand("All"); setSelectedGender("All"); setMaxPrice(400000); setActivePage("Discover"); }}>
+                <button className="text-button" onClick={() => { setSelectedCategory("All"); setSelectedBrand("All"); setSelectedGender("All"); setMaxPrice(400000); setActivePage("Dashboard"); }}>
                   {t.viewAll} <ArrowUpRight size={15} />
                 </button>
               </div>
@@ -1004,7 +1108,7 @@ function App() {
                   <button
                     key={cat.label}
                     className={`category-card category-${index % 12}`}
-                    onClick={() => { setSelectedCategory(cat.label); setSelectedBrand("All"); setActivePage("Discover"); }}
+                    onClick={() => { setSelectedCategory(cat.label); setSelectedBrand("All"); setActivePage("Dashboard"); }}
                     aria-label={`Browse ${cat.label}`}
                   >
                     <span className="category-icon" aria-hidden="true">{cat.icon}</span>
@@ -1133,7 +1237,7 @@ function App() {
                     <Search size={25} />
                     <h3>{activePage === "Wishlist" ? t.wishlistEmpty : activePage === "Cart" ? t.cartEmpty : t.noMatches}</h3>
                     <p>{t.exploreDesc}</p>
-                    <button className="secondary-button" onClick={() => { setQuery(""); setSelectedCategory("All"); setSelectedBrand("All"); setSelectedGender("All"); setInStockOnly(false); setMaxPrice(400000); setActivePage("Discover"); }}>
+                    <button className="secondary-button" onClick={() => { setQuery(""); setSelectedCategory("All"); setSelectedBrand("All"); setSelectedGender("All"); setInStockOnly(false); setMaxPrice(400000); setActivePage("Dashboard"); }}>
                       {t.exploreAll}
                     </button>
                   </div>
@@ -1148,7 +1252,7 @@ function App() {
                   </div>
                   <div className="pagination-controls">
                     <button
-                      className="page-btn"
+                      className="page-btn jump-edge"
                       onClick={() => handlePageChange(1)}
                       disabled={currentPage === 1}
                       title="First page"
@@ -1202,7 +1306,7 @@ function App() {
                       {t.next || "Next"} <ChevronRight size={16} />
                     </button>
                     <button
-                      className="page-btn"
+                      className="page-btn jump-edge"
                       onClick={() => handlePageChange(totalPages)}
                       disabled={currentPage === totalPages}
                       title="Last page"

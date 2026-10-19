@@ -6,11 +6,8 @@ export function SettingsPage({ t, lang, onLangChange, theme, onThemeChange, user
   const [notifications, setNotifications] = useState({ deals: true, orders: true, wishlist: false });
 
   const themeList = [
-    { key: "dark-neon", label: "Dark Neon (Default)", icon: "✨", desc: "Signature neon violet & cyan" },
-    { key: "midnight-blue", label: "Midnight Blue", icon: "🌌", desc: "Deep oceanic blue & electric cyan" },
-    { key: "deep-purple", label: "Cyber Purple", icon: "🔮", desc: "Mystic purple & neon pink" },
-    { key: "luxury-emerald", label: "Luxury Emerald", icon: "💎", desc: "Rich emerald green & mint" },
-    { key: "clean-light", label: "Clean Light Mode", icon: "☀️", desc: "Crisp modern light workspace" },
+    { key: "dark-neon", label: "Dark Neon (डार्क निऑन)", icon: "✨", desc: "Signature cyberpunk dark obsidian, glowing violet & cyan" },
+    { key: "clean-light", label: "Clean Light Mode (लाईट मोड)", icon: "☀️", desc: "Crisp modern light workspace, high-contrast dark text" },
   ];
 
   return (
