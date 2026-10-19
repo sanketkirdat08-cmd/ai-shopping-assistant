@@ -846,7 +846,7 @@ function App() {
                 title="Install Nexa App on your phone"
               >
                 <Download size={13} />
-                <span>{lang === "mr" ? "ॲप इन्स्टॉल" : "Install App"}</span>
+                <span className="install-pill-text">{lang === "mr" ? "ॲप इन्स्टॉल" : "Install App"}</span>
               </button>
             )}
 
@@ -1077,9 +1077,14 @@ function App() {
 
               {/* Toolbar: price + inStock + sort */}
               <div className="catalog-toolbar">
-                <div>
-                  <span>{t.priceRange}</span>
-                  <strong>{money(1)} — {money(maxPrice)}</strong>
+                <div className="toolbar-price-row">
+                  <div>
+                    <span>{t.priceRange}</span>
+                    <strong>{money(1)} — {money(maxPrice)}</strong>
+                  </div>
+                  <button className="reset-filter" onClick={() => { setMaxPrice(400000); setSelectedCategory("All"); setSelectedBrand("All"); setSelectedGender("All"); setInStockOnly(false); setQuery(""); setSortKey("default"); }}>
+                    {t.reset}
+                  </button>
                 </div>
                 <input
                   type="range" min="1" max="400000" step="2500"
@@ -1087,23 +1092,22 @@ function App() {
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
                   aria-label="Max price"
                 />
-                <label className="instock-toggle-label">
-                  <input
-                    type="checkbox"
-                    checked={inStockOnly}
-                    onChange={(e) => setInStockOnly(e.target.checked)}
-                  />
-                  <span>{t.inStockOnly || "In Stock Only"}</span>
-                </label>
-                <div className="sort-wrap">
-                  <ArrowUpDown size={13} aria-hidden="true" />
-                  <select value={sortKey} onChange={(e) => setSortKey(e.target.value)} aria-label={t.sortBy} className="sort-select">
-                    {sortOptions.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
-                  </select>
+                <div className="toolbar-controls-row">
+                  <label className="instock-toggle-label">
+                    <input
+                      type="checkbox"
+                      checked={inStockOnly}
+                      onChange={(e) => setInStockOnly(e.target.checked)}
+                    />
+                    <span>{t.inStockOnly || "In Stock Only"}</span>
+                  </label>
+                  <div className="sort-wrap">
+                    <ArrowUpDown size={13} aria-hidden="true" />
+                    <select value={sortKey} onChange={(e) => setSortKey(e.target.value)} aria-label={t.sortBy} className="sort-select">
+                      {sortOptions.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
+                    </select>
+                  </div>
                 </div>
-                <button className="reset-filter" onClick={() => { setMaxPrice(400000); setSelectedCategory("All"); setSelectedBrand("All"); setSelectedGender("All"); setInStockOnly(false); setQuery(""); setSortKey("default"); }}>
-                  {t.reset}
-                </button>
               </div>
 
               {/* Products (Paginated) */}
@@ -1252,7 +1256,7 @@ function App() {
       </main>
 
       {/* ── AI Chat Modal ── */}
-      {activePage === "AI Assistant" && (
+      {(activePage === "AI Assistant" || activePage === "Chat") && (
         <div className="modal-backdrop" onClick={() => setActivePage("Dashboard")} role="dialog" aria-modal="true" aria-label="AI Assistant">
           <section className="chat-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
@@ -1531,8 +1535,17 @@ function App() {
         </button>
         <button
           type="button"
-          className={`mob-nav-btn ${activePage === "Chat" ? "active" : ""}`}
-          onClick={() => setActivePage("Chat")}
+          className={`mob-nav-btn ${activePage === "Wishlist" ? "active" : ""}`}
+          onClick={() => setActivePage("Wishlist")}
+        >
+          <Heart size={20} />
+          <span>Saved</span>
+          {wishlist.length > 0 && <span className="mob-badge">{wishlist.length}</span>}
+        </button>
+        <button
+          type="button"
+          className={`mob-nav-btn ${activePage === "AI Assistant" || activePage === "Chat" ? "active" : ""}`}
+          onClick={() => setActivePage("AI Assistant")}
         >
           <div className="mob-ai-bubble">
             <Sparkles size={18} />
@@ -1541,21 +1554,12 @@ function App() {
         </button>
         <button
           type="button"
-          className={`mob-nav-btn ${activePage === "Compare" ? "active" : ""}`}
-          onClick={() => setActivePage("Compare")}
+          className={`mob-nav-btn ${activePage === "Orders" ? "active" : ""}`}
+          onClick={() => setActivePage("Orders")}
         >
-          <BarChart3 size={20} />
-          <span>Compare</span>
-          {compare.length > 0 && <span className="mob-badge">{compare.length}</span>}
-        </button>
-        <button
-          type="button"
-          className={`mob-nav-btn ${activePage === "Wishlist" ? "active" : ""}`}
-          onClick={() => setActivePage("Wishlist")}
-        >
-          <Heart size={20} />
-          <span>Saved</span>
-          {wishlist.length > 0 && <span className="mob-badge">{wishlist.length}</span>}
+          <Package size={20} />
+          <span>Orders</span>
+          {orders.length > 0 && <span className="mob-badge">{orders.length}</span>}
         </button>
         <button
           type="button"

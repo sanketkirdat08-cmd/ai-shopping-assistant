@@ -528,7 +528,7 @@ def build_report():
     add_body(
         "Today, modern web applications are widely used on smartphones, laptops, tablets, smart TVs and desktop computers. Its continuous development and integration with Artificial Intelligence models such as Google Gemini have made it an essential platform for modern software development."
     )
-    add_img('extracted_images/p11_img1_47.jpeg', width_in=4.4, caption="Web & Mobile Technology Evolution Timeline")
+    add_img('extracted_images/diagram_web_timeline.png', width_in=4.8, caption="Figure 1.1: Web, Frontend & AI Technology Evolution Timeline (1991 - 2026)")
 
     doc.add_page_break()
 
@@ -624,7 +624,7 @@ def build_report():
     add_body(
         "The browser DevTools and Vite dev server work together to run and test web applications. During the training, they were used to run and test applications developed in Visual Studio Code."
     )
-    add_img('extracted_images/p15_img1_63.jpeg', width_in=3.8, caption="Figure 2.3: Device Emulation & Responsive Testing")
+    add_img('extracted_images/diagram_responsive_testing.png', width_in=4.8, caption="Figure 2.3: Device Emulation & Responsive Web Testing")
 
     doc.add_page_break()
 
@@ -885,7 +885,7 @@ def build_report():
     add_bullet("2. useEffect() – Called when component mounts or updates, used for side effects and data fetching.")
     add_bullet("3. useMemo() – Caches expensive calculations like product filtering and sorting.")
     add_bullet("4. useCallback() – Prevents unnecessary child re-renders by caching callback functions.")
-    add_img('extracted_images/p27_img1_88.jpeg', width_in=3.6, caption="Figure 5.2: Application Lifecycle & State Management")
+    add_img('extracted_images/diagram_react_lifecycle.png', width_in=4.8, caption="Figure 5.2: React Component Lifecycle & State Management Flow")
     add_body(
         "Understanding the Component Lifecycle helps developers manage application resources and handle screen updates properly."
     )
@@ -1007,7 +1007,7 @@ def build_report():
     add_body("2. Read:\nThe Read operation is used to retrieve stored data from storage and display it in the application.")
     add_body("3. Update:\nThe Update operation is used to modify existing records. For example, changing product quantities or toggling wishlist status.")
     add_body("4. Delete:\nThe Delete operation is used to remove unwanted records from storage, such as removing an item from the cart.")
-    add_img('extracted_images/p47_img1_141.jpeg', width_in=4.0, caption="Figure 6.3: CRUD Operations Architecture")
+    add_img('extracted_images/diagram_crud_localstorage.png', width_in=4.8, caption="Figure 6.3: Client-side Storage & CRUD Operations Architecture")
     add_body("Importance of CRUD Operations:")
     add_bullet("- Helps manage application data effectively.")
     add_bullet("- Allows users to add and view records dynamically.")
@@ -1036,7 +1036,7 @@ def build_report():
     add_bullet("3. Receive intelligent response from server.")
     add_bullet("4. Parse JSON / text data.")
     add_bullet("5. Display recommendations in the application.")
-    add_img('extracted_images/p33_img1_101.jpeg', width_in=4.4, caption="Figure 6.4: Client-API Communication Flow")
+    add_img('extracted_images/diagram_api_communication.png', width_in=4.8, caption="Figure 6.4: Client-to-API Communication & Gemini AI Inference Flow")
     add_body(
         "APIs are useful for applications such as Artificial Intelligence, weather, payment and news. During training, Google Gemini AI API integration was studied and implemented."
     )
@@ -1084,7 +1084,7 @@ def build_report():
     add_bullet("5. Connect components using state and props.")
     add_bullet("6. Implement required shopping and AI features.")
     add_bullet("7. Run and test the application.")
-    add_img('extracted_images/p35_img1_108.jpeg', width_in=4.0, caption="Figure 7.2: Application Development Lifecycle")
+    add_img('extracted_images/diagram_web_dev_lifecycle.png', width_in=4.8, caption="Figure 7.2: Web & AI Application Development Lifecycle (SDLC)")
     add_body(
         "Feature implementation converts project requirements into working functions. It includes user input, navigation, database operations and API integration."
     )
@@ -1184,7 +1184,7 @@ def build_report():
     add_body("Types of Builds:")
     add_bullet("- Development Build: Used during coding with Hot Module Replacement.")
     add_bullet("- Production Build: Final minified version used for distribution and deployment.")
-    add_img('extracted_images/p50_img1_150.png', width_in=4.4, caption="Figure 8.2: Asset Compilation & Bundling Pipeline")
+    add_img('extracted_images/diagram_vite_build_pipeline.png', width_in=4.8, caption="Figure 8.2: Vite & Rollup Asset Compilation & Bundling Pipeline")
     add_body(
         "Thus, build generation converts the completed web project into a deployable distribution package."
     )
@@ -1228,7 +1228,7 @@ def build_report():
          "1. Download and install Visual Studio Code.\n2. Configure the required Node.js and npm runtime.\n3. Install recommended web extensions (ESLint, Prettier, React snippets).\n4. Configure integrated PowerShell terminal.\n5. Create a sample web project.\n6. Run the project to check the setup.",
          "Result:",
          "Visual Studio Code was successfully installed and configured for web application development.",
-         'extracted_images/p41_img1_123.png', 42),
+         'extracted_images/diagram_vscode_setup.png', 42),
 
         (43, "9.2 REACT PROJECT CREATION PRACTICAL",
          "To create a basic React project using Vite in Visual Studio Code.",
@@ -1236,7 +1236,7 @@ def build_report():
          "Procedure:\n1. Open Visual Studio Code.\n2. Open Integrated Terminal.\n3. Execute 'npm create vite@latest my-app -- --template react'.\n4. Enter the project name.\n5. Select JavaScript as the language.\n6. Run 'npm install' to install dependencies.\n7. Run 'npm run dev' to start the local development server.\n8. View the application in the web browser.",
          "", "",
          "Result:\nA basic React web project was successfully created and executed using Visual Studio Code and Vite.",
-         'extracted_images/p43_img1_128.jpeg', None),
+         'extracted_images/diagram_vite_project_creation.png', None),
 
         (44, "9.3 JAVASCRIPT PROGRAMMING PRACTICAL",
          "To perform basic programming operations using modern JavaScript (ES6+).",
@@ -1244,7 +1244,7 @@ def build_report():
          "Procedure:\n1. Open a web project in Visual Studio Code.\n2. Create or open a JavaScript file.\n3. Declare variables using 'let' and 'const'.\n4. Use different data types (Numbers, Strings, Objects, Arrays).\n5. Perform arithmetic and logical operations.\n6. Use conditional statements and loops.\n7. Create and call arrow functions.\n8. Run the program and check the output in the console.",
          "", "",
          "Result:\nBasic JavaScript programming concepts were successfully implemented and tested in Visual Studio Code.",
-         'extracted_images/p44_img1_131.jpeg', None),
+         'extracted_images/diagram_javascript_es6.png', None),
 
         (45, "9.4 REACT HOOKS & STATE PRACTICAL",
          "To manage component state and perform side-effect operations using React Hooks.",
@@ -1252,7 +1252,7 @@ def build_report():
          "Procedure:\n1. Create a new React component.\n2. Import 'useState' and 'useEffect' from 'react'.\n3. Declare reactive state variables for cart items.\n4. Add interactive buttons to modify state.\n5. Implement useEffect to synchronize data with LocalStorage.\n6. Pass props between components.\n7. Run the application and test reactive state updates.",
          "", "",
          "Result:\nReact Hooks and state management were successfully implemented and tested in the web application.",
-         'extracted_images/p45_img1_134.png', None),
+         'extracted_images/diagram_react_hooks_flow.png', None),
 
         (46, "9.5 UI DESIGN PRACTICAL",
          "To design a responsive and user-friendly dark neon web application interface.",
@@ -1260,7 +1260,7 @@ def build_report():
          "Procedure:\n1. Open the project in Visual Studio Code.\n2. Define CSS variables for dark background and neon violet/cyan colors.\n3. Use CSS Grid for the product catalog layout.\n4. Use Flexbox for navigation, headers and buttons.\n5. Add glowing hover transitions and badge indicators.\n6. Run the application and check responsiveness in browser.",
          "", "",
          "Result:\nA modern and user-friendly dark neon web application interface was successfully designed and tested.",
-         'extracted_images/p46_img1_137.jpeg', None),
+         'extracted_images/report_screen_gallery.png', None),
 
         (47, "9.6 LOCALSTORAGE & CRUD OPERATIONS PRACTICAL",
          "To create a client-side database and perform basic CRUD operations in a web application.",
@@ -1268,7 +1268,7 @@ def build_report():
          "Procedure:\n1. Create a 'storage.js' utility module.\n2. Create a LocalStorage database for cart items.\n3. Insert records into storage using setItem.\n4. Display stored records using getItem.\n5. Update an existing quantity record.\n6. Delete an unwanted record from storage.\n7. Test all operations in the application.",
          "", "",
          "Result:\nA LocalStorage database was successfully created and CRUD operations were performed in the web application.",
-         'extracted_images/p47_img1_141.jpeg', None),
+         'extracted_images/diagram_crud_localstorage.png', None),
 
         (48, "9.7 GEMINI AI INTEGRATION PRACTICAL",
          "To integrate Google Gemini AI API with a web application and display AI shopping recommendations.",
@@ -1276,7 +1276,7 @@ def build_report():
          "Procedure:\n1. Open the project in Visual Studio Code.\n2. Configure Google Gemini API key in .env file.\n3. Create an asynchronous function using fetch.\n4. Send user shopping questions as prompts.\n5. Receive the response from the Gemini server.\n6. Process the response text.\n7. Display received recommendations in Ask Nexa modal.\n8. Run and test the AI chat functionality.",
          "", "",
          "Result:\nThe Gemini AI API was successfully integrated with the web application and real-time recommendations were displayed.",
-         'extracted_images/p48_img1_144.jpeg', None),
+         'extracted_images/report_screen_chat.png', None),
 
         (49, "9.8 DEBUGGING PRACTICAL",
          "To identify and fix errors in a web application using Visual Studio Code and Chrome DevTools.",
@@ -1284,7 +1284,7 @@ def build_report():
          "Procedure:\n1. Open the web project in Visual Studio Code.\n2. Run the application and identify the error.\n3. Check source code and error messages in the Console.\n4. Use DevTools Elements and Network tabs to find the cause.\n5. Correct the code or configuration in VS Code.\n6. Run the application again.\n7. Verify that the error is resolved.",
          "", "",
          "Result:\nErrors in the web application were successfully identified, corrected and tested.",
-         'extracted_images/p49_img1_147.jpeg', None),
+         'extracted_images/diagram_chrome_devtools.png', None),
 
         (50, "9.9 PRODUCTION BUILD PRACTICAL",
          "To generate an optimized production build of a web application using Vite in Visual Studio Code.",
@@ -1292,7 +1292,7 @@ def build_report():
          "Procedure:\n1. Open the completed web project.\n2. Check and fix project errors.\n3. Select the integrated terminal.\n4. Run command 'npm run build'.\n5. Wait for the build process to complete.\n6. Locate the generated 'dist' folder.\n7. Test the production build using 'npm run preview'.",
          "", "",
          "Result:\nThe production web build was successfully generated and tested on a web server.",
-         'extracted_images/p50_img1_150.png', None),
+         'extracted_images/diagram_vite_build_pipeline.png', None),
     ]
 
     for pno, title, aim, req, proc_label, proc_text, res_label, res_text, img_p, pno2 in practicals_pages:
@@ -1384,18 +1384,18 @@ def build_report():
         "The AI Shopping Assistant application is designed to help users shop smart and manage their purchasing activities in a simple and organized way."
     )
     add_body("Main Features:")
-    add_bullet("1. Ask Nexa AI: Allows users to get instant budget-aware recommendations.")
-    add_bullet("2. Product Catalog: Displays 100+ products across smartphones, laptops and wearables.")
-    add_bullet("3. Price Range Filter: Allows users to set price limits from ₹1 to ₹2,00,000.")
-    add_bullet("4. Cart & Wishlist: Displays and manages selected shopping items dynamically.")
-    add_bullet("5. Compare Matrix: Provides side-by-side specification comparison of 3 products.")
-    add_bullet("6. Bilingual Support: Allows switching between English and Marathi languages.")
-    add_bullet("7. Admin Dashboard: Helps track inventory, stock and sales revenue.")
+    add_bullet("1. Ask Nexa AI Assistant: Generative AI shopping recommendations powered by Google Gemini 2.0 with Marathi and English voice/text support.")
+    add_bullet("2. Authentic Master Catalog: Displays 300+ real-world products with authentic specs across phones, laptops, audio, smartwatches and apparel.")
+    add_bullet("3. Dynamic Price Range Slider: Allows users to filter products with budget limits up to ₹4,00,000 in real-time.")
+    add_bullet("4. Target Audience Filter Tabs: Intuitive categorization tabs for '👔 For Men', '👗 Women & Girls', and '🌟 Unisex & All'.")
+    add_bullet("5. Flipkart & Amazon 4-Angle Gallery: High-resolution multi-photo viewer modal for every product.")
+    add_bullet("6. Bilingual Interface: Instant seamless switching between English and Marathi languages.")
+    add_bullet("7. Cart, Checkout & LocalStorage: Complete client-side state persistence with Cash on Delivery checkout and order tracking.")
     add_subheading("Working")
     add_body(
-        "The user opens the application and accesses the catalog. Users can filter by category or price, compare products, and ask Nexa AI for advice. From the cart, the user can proceed to checkout with Cash on Delivery and track placed orders."
+        "The user opens the application and accesses the catalog. Users can filter by category, gender or price (up to ₹4L), inspect 4-angle photo galleries, and ask Nexa AI for advice. From the cart, the user can proceed to checkout with Cash on Delivery and track placed orders."
     )
-    add_img('extracted_images/report_screen_catalog.png', width_in=5.0, caption="Figure 10.3: Product Catalog & Price Filtering")
+    add_img('extracted_images/report_screen_catalog.png', width_in=5.0, caption="Figure 10.3: Product Catalog & Price Filtering (Up to ₹4,00,000)")
 
     doc.add_page_break()
 
