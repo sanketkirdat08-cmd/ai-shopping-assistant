@@ -34,47 +34,173 @@ function formatAiText(text) {
   });
 }
 
-// ─── Extract recommended products mentioned by AI ─────────────────────────────
+// ─── Intelligent Budget Parser (Bilingual: Marathi & English) ────────────────
+function parseBudget(text) {
+  if (!text) return null;
+  const s = text.toLowerCase().replace(/[०-९]/g, (d) => "०१२३४५६७८९".indexOf(d));
+
+  // 1. "k" format e.g. "90k", "50k", "40 k", "₹50k"
+  const kMatch = s.match(/(?:under|below|max|upto|within|budget|च्या\s*आत|च्या\s*खाली|पर्यंत|मध्ये)?\s*(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*k\b/i) ||
+                 s.match(/(\d+(?:\.\d+)?)\s*k\b/i);
+  if (kMatch) {
+    const val = Math.round(parseFloat(kMatch[1]) * 1000);
+    if (val >= 500 && val <= 5000000) return val;
+  }
+
+  // 2. Marathi word numbers + हजार e.g. "चाळीस हजार", "पन्नास हजार"
+  const marathiNumberWords = {
+    "एक": 1, "दोन": 2, "तीन": 3, "चार": 4, "पाच": 5, "सहा": 6, "सात": 7, "आठ": 8, "नऊ": 9, "दहा": 10,
+    "पंधरा": 15, "वीस": 20, "पंचवीस": 25, "तीस": 30, "पस्तीस": 35, "चाळीस": 40, "पंचेचाळीस": 45, "पन्नास": 50,
+    "साठ": 60, "सत्तर": 70, "ऐंशी": 80, "नव्वद": 90, "शंभर": 100
+  };
+  for (const [w, n] of Object.entries(marathiNumberWords)) {
+    if (s.includes(`${w} हजार`) || s.includes(`${w} हजारात`)) {
+      return n * 1000;
+    }
+  }
+
+  // 3. Digits + हजार e.g. "50 हजार"
+  const hazarMatch = s.match(/(\d+)\s*(?:हजार|hazar)/i);
+  if (hazarMatch) {
+    return parseInt(hazarMatch[1], 10) * 1000;
+  }
+
+  // 4. Lakh e.g. "1 लाख", "दीड लाख"
+  if (s.includes("दीड लाख")) return 150000;
+  if (s.includes("सव्वा लाख")) return 125000;
+  const lakhMatch = s.match(/(\d+(?:\.\d+)?)\s*(?:लाख|lakh|lac)/i);
+  if (lakhMatch) {
+    return Math.round(parseFloat(lakhMatch[1]) * 100000);
+  }
+
+  // 5. Standard currency numbers: "50000", "50,000", "₹40,000", "under 40000", "40000 च्या आत"
+  const numMatches = s.match(/(?:under|below|max|upto|within|budget|at most|च्या\s*आत|च्या\s*खाली|पर्यंत|मध्ये|चा)?\s*(?:₹|rs\.?|inr)?\s*(\d{1,3}(?:,\d{3})+|\d{4,7})/gi);
+  if (numMatches) {
+    for (const raw of numMatches) {
+      const cleanNum = parseInt(raw.replace(/[^\d]/g, ""), 10);
+      if (cleanNum >= 500 && cleanNum <= 5000000) {
+        return cleanNum;
+      }
+    }
+  }
+
+  const directMatch = s.match(/(?:₹|rs\.?|inr)\s*(\d{1,3}(?:,\d{3})+|\d{4,7})/i) ||
+                      s.match(/\b(\d{1,3}(?:,\d{3})+|\d{4,7})\b/);
+  if (directMatch) {
+    const val = parseInt(directMatch[1].replace(/,/g, ""), 10);
+    if (val >= 500 && val <= 5000000) return val;
+  }
+
+  return null;
+}
+
+// ─── Intelligent Category Detector (Bilingual) ────────────────────────────────
+function detectCategory(text) {
+  if (!text) return null;
+  const s = text.toLowerCase();
+  
+  // 1. Audio first (because "headphone" contains "phone" and "हेडफोन" contains "फोन")
+  if (s.includes("headphone") || s.includes("earbud") || s.includes("earphone") || s.includes("airpod") || s.includes("audio") || s.includes("speaker") || s.includes("हेडफोन") || s.includes("इअरबड") || s.includes("इअरफोन") || s.includes("स्पीकर") || s.includes("साउंड") || s.includes("गाणी")) {
+    return "Audio";
+  }
+  // 2. Laptops
+  if (s.includes("laptop") || s.includes("लॅपटॉप") || s.includes("notebook") || s.includes("computer") || s.includes("कम्प्युटर") || s.includes("संगणक")) {
+    return "Laptops";
+  }
+  // 3. Wearables / Smartwatches
+  if (s.includes("watch") || s.includes("smartwatch") || s.includes("wearable") || s.includes("घड्याळ") || s.includes("स्मार्टवॉच") || s.includes("वॉच") || s.includes("फिटनेस")) {
+    return "Wearables";
+  }
+  // 4. Smartphones / Mobiles
+  if (s.includes("smartphone") || s.includes("mobile") || s.includes("मोबाईल") || s.includes("स्मार्टफोन") || s.includes("iphone") || s.includes("galaxy") || s.includes("redmi") || s.includes("oneplus") || (s.includes("phone") && !s.includes("headphone") && !s.includes("earphone")) || (s.includes("फोन") && !s.includes("हेडफोन") && !s.includes("इअरफोन"))) {
+    return "Smartphones";
+  }
+  // 5. Cameras
+  if (s.includes("camera") || s.includes("कॅमेरा") || s.includes("dslr") || s.includes("lens") || s.includes("लेन्स") || s.includes("photography")) {
+    return "Cameras";
+  }
+  // 6. Gaming
+  if (s.includes("game") || s.includes("gaming") || s.includes("गेमिंग") || s.includes("गेम") || s.includes("ps5") || s.includes("xbox") || s.includes("कन्सोल") || s.includes("console")) {
+    return "Gaming";
+  }
+  // 7. Fashion & Clothing
+  if (s.includes("fashion") || s.includes("cloth") || s.includes("dress") || s.includes("saree") || s.includes("shirt") || s.includes("suit") || s.includes("jeans") || s.includes("कपडे") || s.includes("शर्ट") || s.includes("साडी") || s.includes("ड्रेस") || s.includes("सूट") || s.includes("कुर्ती") || s.includes("men") || s.includes("women") || s.includes("पुरुष") || s.includes("महिला")) {
+    return "Fashion";
+  }
+  // 8. Shoes
+  if (s.includes("shoe") || s.includes("sneaker") || s.includes("boot") || s.includes("footwear") || s.includes("शूज") || s.includes("बूट") || s.includes("चप्पल")) {
+    return "Fashion";
+  }
+  // 9. Home & Kitchen
+  if (s.includes("home") || s.includes("kitchen") || s.includes("vacuum") || s.includes("घर") || s.includes("किचन")) {
+    return "Home & Kitchen";
+  }
+  return null;
+}
+
+// ─── Extract recommended products mentioned by AI (STRICT BUDGET ENFORCED) ───
 function findRecommendedProducts(aiText, userMsg, catalog) {
   const found = [];
-  const lowerText = ((aiText || "") + " " + (userMsg || "")).toLowerCase();
+  const combinedText = ((userMsg || "") + " " + (aiText || "")).toLowerCase();
+  const maxBudget = parseBudget(userMsg) || parseBudget(aiText);
+  const detectedCat = detectCategory(userMsg) || detectCategory(aiText);
 
-  // 1. Check for bold names **Product Name**
+  // Helper to ensure product does not exceed user's maximum budget
+  const fitsBudget = (p) => !maxBudget || p.price <= maxBudget;
+
+  // 1. Check for bold names **Product Name** from AI response
   const boldMatches = aiText.match(/\*\*(.*?)\*\*/g)?.map((m) => m.replace(/\*\*/g, "").trim()) || [];
   for (const bName of boldMatches) {
     if (bName.length < 3) continue;
     const match = catalog.find(
       (p) =>
-        p.name.toLowerCase().includes(bName.toLowerCase()) ||
-        bName.toLowerCase().includes(p.name.toLowerCase())
+        (p.name.toLowerCase().includes(bName.toLowerCase()) ||
+         bName.toLowerCase().includes(p.name.toLowerCase())) &&
+        fitsBudget(p)
     );
     if (match && !found.some((f) => f.id === match.id)) {
       found.push(match);
+      if (found.length >= 3) break;
     }
   }
 
-  // 2. Check catalog products mentioned by full name
+  // 2. Check catalog products mentioned by full name in the text (that fit budget)
   if (found.length < 3) {
     for (const p of catalog) {
       if (found.length >= 3) break;
-      if (p.name.length > 5 && lowerText.includes(p.name.toLowerCase()) && !found.some((f) => f.id === p.id)) {
+      if (p.name.length > 5 && combinedText.includes(p.name.toLowerCase()) && fitsBudget(p) && !found.some((f) => f.id === p.id)) {
         found.push(p);
       }
     }
   }
 
-  // 3. Fallback to category matches
-  if (found.length === 0) {
-    const cats = ["Laptops", "Audio", "Wearables", "Smartphones", "Cameras", "Gaming", "Smart Home", "Monitors"];
-    for (const cat of cats) {
-      if (
-        lowerText.includes(cat.toLowerCase()) ||
-        (cat === "Laptops" && lowerText.includes("लॅपटॉप")) ||
-        (cat === "Audio" && (lowerText.includes("हेडफोन") || lowerText.includes("audio")))
-      ) {
-        const catItems = catalog.filter((p) => p.type === cat).slice(0, 3);
-        found.push(...catItems);
-        break;
+  // 3. Fallback to category products that STRICTLY fit the budget
+  if (found.length < 3) {
+    let pool = catalog;
+    if (detectedCat) {
+      const catMatches = pool.filter((p) => p.type === detectedCat);
+      if (catMatches.length > 0) pool = catMatches;
+    }
+    // Filter by budget strictly
+    if (maxBudget) {
+      const budgetMatches = pool.filter((p) => p.price <= maxBudget);
+      if (budgetMatches.length > 0) pool = budgetMatches;
+    }
+
+    // Sort pool: products closest to the budget or highest rated
+    pool.sort((a, b) => {
+      if (maxBudget) {
+        const diffA = Math.abs(maxBudget - a.price);
+        const diffB = Math.abs(maxBudget - b.price);
+        return diffA - diffB || b.rating - a.rating;
+      }
+      return b.rating - a.rating;
+    });
+
+    for (const p of pool) {
+      if (found.length >= 3) break;
+      if (fitsBudget(p) && !found.some((f) => f.id === p.id)) {
+        found.push(p);
       }
     }
   }
@@ -82,113 +208,145 @@ function findRecommendedProducts(aiText, userMsg, catalog) {
   return found.slice(0, 3);
 }
 
-// ─── Gemini AI helper (Advanced with memory & dynamic catalog) ───────────────
+// ─── Ultra-Smart Dynamic Local Engine (100% Budget & Category Compliant) ─────
+function generateSmartLocalReply(userMessage, candidates, maxBudget, detectedCat, lang) {
+  const p1 = candidates[0];
+  const p2 = candidates[1];
+
+  if (!p1) {
+    if (lang === "mr") {
+      return maxBudget
+        ? `क्षमस्व! ₹${maxBudget.toLocaleString("en-IN")} च्या आत सध्या या श्रेणीत मॉडेल उपलब्ध नाही. कृपया बजेट थोडे वाढवा किंवा इतर श्रेणी शोधा!`
+        : `मी नेक्सा आहे! तुमचे बजेट (उदा. 'लॅपटॉप ₹50,000 च्या आत') आणि हवी असलेली वस्तू सांगा, मी लगेच शोधून देईन!`;
+    }
+    return maxBudget
+      ? `Sorry! We currently don't have models under ₹${maxBudget.toLocaleString("en-IN")} in this category. Consider slightly adjusting your budget or exploring other categories!`
+      : `I'm Nexa! Tell me what you're looking for and your budget (e.g. 'laptop under ₹50,000'), and I'll find the best options!`;
+  }
+
+  const price1Str = `₹${p1.price.toLocaleString("en-IN")}`;
+  const spec1 = p1.specs?.[0] || p1.type;
+
+  if (lang === "mr") {
+    if (maxBudget) {
+      let reply = `तुमच्या ₹${maxBudget.toLocaleString("en-IN")} च्या बजेटमध्ये **${p1.name}** (${price1Str}) हा ${spec1} सह सर्वोत्तम पर्याय आहे!`;
+      if (p2 && p2.price <= maxBudget) {
+        reply += ` तसेच **${p2.name}** (₹${p2.price.toLocaleString("en-IN")}) हा दुसरा उत्तम पर्याय उपलब्ध आहे.`;
+      }
+      return reply;
+    }
+    let reply = `तुमच्यासाठी **${p1.name}** (${price1Str}) हा ${spec1} सह सर्वोत्तम पर्याय आहे!`;
+    if (p2) {
+      reply += ` तसेच **${p2.name}** (₹${p2.price.toLocaleString("en-IN")}) देखील पाहू शकता.`;
+    }
+    return reply;
+  } else {
+    if (maxBudget) {
+      let reply = `Within your budget of ₹${maxBudget.toLocaleString("en-IN")}, I recommend the **${p1.name}** at ${price1Str} featuring ${spec1}!`;
+      if (p2 && p2.price <= maxBudget) {
+        reply += ` Another great choice is **${p2.name}** at ₹${p2.price.toLocaleString("en-IN")}.`;
+      }
+      return reply;
+    }
+    let reply = `I recommend the **${p1.name}** at ${price1Str} featuring ${spec1}!`;
+    if (p2) {
+      reply += ` You can also check out **${p2.name}** at ₹${p2.price.toLocaleString("en-IN")}.`;
+    }
+    return reply;
+  }
+}
+
+// ─── Gemini AI helper (Advanced with memory, strict budget & verified models) ─
 async function askGemini(userMessage, products, lang, history = []) {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const maxBudget = parseBudget(userMessage);
+  const detectedCat = detectCategory(userMessage);
 
-  // Intelligently retrieve matching products from the 4,800 database
-  const lowerMsg = userMessage.toLowerCase();
-  const matched = products.filter(p =>
-    lowerMsg.includes(p.type.toLowerCase()) ||
-    (p.brand && lowerMsg.includes(p.brand.toLowerCase())) ||
-    p.name.toLowerCase().split(" ").some(w => w.length > 3 && lowerMsg.includes(w))
-  );
-  const sampleProducts = matched.length > 0 ? matched.slice(0, 25) : products.slice(0, 25);
-
-  const catalogList = sampleProducts.map(p =>
-    `- ${p.name} (${p.brand || ""}, ${p.type}, ₹${p.price.toLocaleString("en-IN")}, Rating: ${p.rating}★, Specs: ${p.specs.slice(0, 2).join(", ")}, Stock: ${p.stock})`
-  ).join("\n");
-
-  const systemInstruction = `You are Nexa, an elite AI Shopping Assistant developed by Sharvari Pawar (Arvind Gavli College of Engineering - AI Commerce Lab).
-Store catalog (4,800+ models):
-${catalogList}
-
-Rules:
-1. Always give helpful, accurate product recommendations with real prices (₹) from the catalog.
-2. If the user asks in Marathi (मराठी) or if lang is 'mr', reply in fluent, natural Marathi. If Hindi ('hi'), reply in clear Hindi. If English, reply in professional English.
-3. Be concise and crisp (2-3 sentences). Always mention recommended product names in bold like **ProductName** so users can click on direct links.
-4. When comparing products or recommending deals, highlight key specs and value for money.`;
-
-  if (apiKey) {
-    try {
-      const contents = [
-        {
-          role: "user",
-          parts: [{ text: `${systemInstruction}\n\nUser is now chatting with you.` }]
-        },
-        {
-          role: "model",
-          parts: [{ text: lang === "mr" ? "मी नेक्सा आहे, तुमचा AI खरेदी सहाय्यक. मी कशी मदत करू?" : "I am Nexa, your AI shopping assistant. How can I assist you today?" }]
-        },
-        ...history.slice(-6).map((m) => ({
-          role: m.from === "user" ? "user" : "model",
-          parts: [{ text: m.text }]
-        })),
-        {
-          role: "user",
-          parts: [{ text: userMessage }]
-        }
-      ];
-
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (reply && reply.trim()) return reply.trim();
-      }
-    } catch (err) {
-      console.warn("Gemini API call failed, using smart local engine", err);
+  // 1. Filter catalog items specifically tailored to user's intent & budget
+  let relevant = products;
+  if (detectedCat) {
+    const catMatches = relevant.filter((p) => p.type === detectedCat);
+    if (catMatches.length > 0) relevant = catMatches;
+  }
+  if (maxBudget) {
+    const budgetFiltered = relevant.filter((p) => p.price <= maxBudget);
+    if (budgetFiltered.length > 0) {
+      relevant = budgetFiltered;
     }
   }
 
-  // Smart intelligent local fallback engine
-  const lower = userMessage.toLowerCase();
-  if (lower.includes("laptop") || lower.includes("लॅपटॉप")) {
-    const laps = products.filter((p) => p.type === "Laptops");
-    const m1 = laps[0]?.name || "Apple MacBook Pro 16 M3 Max";
-    const m2 = laps[14]?.name || "Dell XPS 16 9640 OLED";
-    return lang === "mr"
-      ? `तुमच्यासाठी **${m1}** (₹${laps[0]?.price?.toLocaleString("en-IN")}) हा M3 Max चिप व लिक्विड रेटिना XDR डिस्प्लेसह सर्वोत्तम आहे. विंडोजमध्ये **${m2}** हा उत्कृष्ट पर्याय आहे!`
-      : `I recommend the **${m1}** at ₹${laps[0]?.price?.toLocaleString("en-IN")} with Liquid Retina XDR. For Windows, check **${m2}**!`;
+  // Sort by rating and proximity to budget
+  relevant.sort((a, b) => {
+    if (maxBudget) {
+      return Math.abs(maxBudget - a.price) - Math.abs(maxBudget - b.price) || b.rating - a.rating;
+    }
+    return b.rating - a.rating;
+  });
+
+  const sampleProducts = relevant.slice(0, 20);
+  const catalogList = sampleProducts.map((p) =>
+    `- ${p.name} (Brand: ${p.brand || ""}, Category: ${p.type}, Price: ₹${p.price.toLocaleString("en-IN")}, Rating: ${p.rating}★, Specs: ${p.specs.slice(0, 2).join(", ")})`
+  ).join("\n");
+
+  const budgetRule = maxBudget
+    ? `STRICT BUDGET CONSTRAINT: The user's maximum budget is ₹${maxBudget.toLocaleString("en-IN")}. You MUST ONLY recommend products from the catalog that cost LESS THAN OR EQUAL TO ₹${maxBudget.toLocaleString("en-IN")}. NEVER recommend any product priced above ₹${maxBudget.toLocaleString("en-IN")}.`
+    : `No specific budget was given. Recommend top-rated value-for-money options.`;
+
+  const systemInstruction = `You are Nexa, an elite AI Shopping Assistant developed by Sharvari Pawar (Arvind Gavli College of Engineering - AI Commerce Lab).
+Available Verified Store Catalog:
+${catalogList}
+
+${budgetRule}
+
+Rules:
+1. Always recommend 1 to 2 exact products from the provided catalog above. Write the exact product name in bold like **ProductName** along with its exact price in ₹.
+2. If the user asks in Marathi (मराठी) or lang is 'mr', reply in natural, fluent, grammatically correct Marathi. If English, reply in professional English.
+3. Be concise (2-3 sentences). Highlight key specifications and why it is the best choice for the user's budget.
+4. If the user asks about laptops, phones, headphones, or smartwatches, directly answer with the best matched product from the catalog.`;
+
+  // 2. Try Gemini API with verified model endpoints: gemini-3.5-flash-lite, then gemini-3.5-flash
+  if (apiKey) {
+    const modelsToTry = ["gemini-3.5-flash-lite", "gemini-3.5-flash"];
+    for (const model of modelsToTry) {
+      try {
+        const contents = [
+          {
+            role: "user",
+            parts: [{ text: `${systemInstruction}\n\nUser is now chatting with you.` }]
+          },
+          {
+            role: "model",
+            parts: [{ text: lang === "mr" ? "मी नेक्सा आहे, तुमचा AI खरेदी सहाय्यक. मी कशी मदत करू?" : "I am Nexa, your AI shopping assistant. How can I assist you today?" }]
+          },
+          ...history.slice(-4).map((m) => ({
+            role: m.from === "user" ? "user" : "model",
+            parts: [{ text: m.text }]
+          })),
+          {
+            role: "user",
+            parts: [{ text: userMessage }]
+          }
+        ];
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contents }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (reply && reply.trim()) return reply.trim();
+        }
+      } catch (err) {
+        console.warn(`Gemini API call (${model}) failed, trying next:`, err);
+      }
+    }
   }
-  if (lower.includes("audio") || lower.includes("headphone") || lower.includes("earbud") || lower.includes("speaker") || lower.includes("हेडफोन")) {
-    return lang === "mr"
-      ? `नॉइज कॅन्सलेशनसाठी **Sony WH-1000XM5 Wireless Noise Cancelling** (₹29,990) आणि **Bose QuietComfort Ultra Headphones** (₹35,900) हे सर्वोत्तम पर्याय आहेत.`
-      : `For world-class ANC, choose **Sony WH-1000XM5 Wireless Noise Cancelling** (₹29,990) or **Bose QuietComfort Ultra Headphones** (₹35,900)!`;
-  }
-  if (lower.includes("phone") || lower.includes("smartphone") || lower.includes("mobile") || lower.includes("फोन")) {
-    return lang === "mr"
-      ? `फ्लॅगशिप परफॉर्मन्ससाठी **Apple iPhone 15 Pro Max** (₹1,49,900) आणि 200MP कॅमेऱ्यासाठी **Samsung Galaxy S24 Ultra 5G** (₹1,29,999) सर्वोत्तम पर्याय आहेत.`
-      : `For flagship performance, choose **Apple iPhone 15 Pro Max** (₹1,49,900) or **Samsung Galaxy S24 Ultra 5G** (₹1,29,999)!`;
-  }
-  if (lower.includes("watch") || lower.includes("wearable") || lower.includes("घड्याळ")) {
-    return lang === "mr"
-      ? `स्मार्टवॉचसाठी **Apple Watch Ultra 2** (₹89,900) आणि लक्झरी क्लासिकसाठी **Rolex Submariner Date 41mm** (₹3,95,000) किंवा **Omega Seamaster Diver 300M** सर्वोत्तम आहेत.`
-      : `For smartwatches, choose **Apple Watch Ultra 2** (₹89,900). For luxury timepieces, explore **Rolex Submariner Date 41mm** or **Omega Seamaster Diver 300M**!`;
-  }
-  if (lower.includes("camera") || lower.includes("कॅमेरा")) {
-    return lang === "mr"
-      ? `फोटोग्राफी व व्हिडिओसाठी **Sony Alpha 7 IV 33MP Full-Frame** (₹2,09,990) आणि 8K सिनेमासाठी **Canon EOS R5 45MP 8K** सर्वोत्तम पर्याय आहेत.`
-      : `For pro photography, choose **Sony Alpha 7 IV 33MP Full-Frame** (₹2,09,990) or **Canon EOS R5 45MP 8K**!`;
-  }
-  if (lower.includes("fashion") || lower.includes("कपडे") || lower.includes("men") || lower.includes("women") || lower.includes("girl") || lower.includes("पुरुष") || lower.includes("महिला")) {
-    return lang === "mr"
-      ? `पुरुषांसाठी **Raymond Men's Pure Wool 3-Piece Tuxedo Suit** (₹24,990) आणि महिलांसाठी **Sabyasachi Heritage Banarasi Katan Silk Bridal Saree** (₹1,45,000) तसेच **Zara Women's Floral Ruffled Chiffon Midi Dress** उपलब्ध आहेत!`
-      : `For Men, explore **Raymond Men's Pure Wool 3-Piece Tuxedo Suit**. For Women, explore **Sabyasachi Heritage Banarasi Katan Silk Bridal Saree** and **Zara Women's Floral Ruffled Chiffon Midi Dress**!`;
-  }
-  if (lower.includes("discount") || lower.includes("offer") || lower.includes("deal") || lower.includes("सूट") || lower.includes("ऑफर")) {
-    return lang === "mr"
-      ? `सध्या सर्वोत्तम डिस्काउंट डील्स **Sony WH-1000XM4**, **Dyson V15 Detect**, आणि **Nike Air Jordan 1 Retro High OG** वर उपलब्ध आहेत!`
-      : `Top discount deals right now on **Sony WH-1000XM4**, **Dyson V15 Detect**, and **Nike Air Jordan 1 Retro High OG**!`;
-  }
-  return lang === "mr"
-    ? `मी नेक्सा आहे! तुमचे बजेट (₹1 ते ₹4,00,000 पर्यंत) आणि पसंती सांगा (उदा. 'लॅपटॉप ₹1,50,000 च्या आत', 'iPhone 15 Pro', किंवा 'पुरुषांचे कपडे'). मी लगेच योग्य वस्तू शोधून देईन!`
-    : `I'm Nexa! Tell me your budget (from ₹1 to ₹4,00,000) or preference (e.g. 'Laptop under ₹1,50,000', 'iPhone 15 Pro', or 'Men's Suits'). I'll find the best options for you!`;
+
+  // 3. Ultra-Smart Local Fallback Engine (Dynamic & 100% Budget-Compliant)
+  return generateSmartLocalReply(userMessage, sampleProducts, maxBudget, detectedCat, lang);
 }
 
 // ─── Sort helper ───────────────────────────────────────────────────────────────
@@ -1443,19 +1601,19 @@ function App() {
             {/* Quick suggestion chips */}
             <div className="chat-chips">
               {(lang === "mr" ? [
-                "💻 ₹90k मध्ये लॅपटॉप",
-                "🎧 ANC हेडफोन",
-                "📱 50MP कॅमेरा फोन",
-                "🔥 सर्वोत्तम डिस्काउंट",
-                "⌚ फिटनेस वॉच",
-                "⚡ गेमिंग कन्सोल"
+                "💻 ₹50,000 च्या आत लॅपटॉप",
+                "📱 ₹20,000 च्या आत मोबाईल",
+                "🎧 ₹2,000 च्या आत इअरबड्स",
+                "⌚ ₹3,000 च्या आत स्मार्टवॉच",
+                "🔥 सर्वोत्तम डील्स",
+                "⚡ गेमिंग उपकरणे"
               ] : [
-                "💻 Laptop under ₹90k",
-                "🎧 Best ANC headphones",
-                "📱 50MP camera phone",
+                "💻 Laptop under ₹50,000",
+                "📱 Smartphone under ₹20,000",
+                "🎧 Earbuds under ₹2,000",
+                "⌚ Smartwatch under ₹3,000",
                 "🔥 Top discount deals",
-                "⌚ Fitness smartwatch",
-                "⚡ Gaming console"
+                "⚡ Gaming gadgets"
               ]).map((chip) => (
                 <button
                   key={chip}
